@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local LLM Code Review API — Build Plan</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f4f0;
+      color: #1a1a18;
+      padding: 40px 24px;
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 36px;
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: -0.3px;
+      color: #1a1a18;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      font-size: 14px;
+      color: #6b6a63;
+    }
+
+    .week-card {
+      background: #ffffff;
+      border: 0.5px solid rgba(0,0,0,0.12);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .week-header {
+      background: #f5f4f0;
+      padding: 13px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 0.5px solid rgba(0,0,0,0.1);
+    }
+
+    .week-badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 11px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .badge-blue   { background: #dceefb; color: #0c447c; }
+    .badge-green  { background: #dff0d0; color: #27500a; }
+    .badge-amber  { background: #faeeda; color: #633806; }
+    .badge-red    { background: #fce8e8; color: #791f1f; }
+    .badge-gray   { background: #eeede8; color: #444441; border: 0.5px solid rgba(0,0,0,0.12); }
+
+    .week-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: #1a1a18;
+    }
+
+    .week-body {
+      padding: 16px 18px;
+    }
+
+    .week-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 520px) {
+      .week-grid { grid-template-columns: 1fr; }
+    }
+
+    .col-label {
+      font-size: 11px;
+      color: #9b9a92;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 7px;
+    }
+
+    .day-item {
+      font-size: 13px;
+      color: #3d3d3a;
+      line-height: 1.55;
+      margin-bottom: 5px;
+    }
+
+    .check-item {
+      font-size: 13px;
+      color: #3d3d3a;
+      line-height: 1.55;
+      margin-bottom: 5px;
+      display: flex;
+      gap: 6px;
+    }
+
+    .check-mark {
+      color: #1d9e75;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .deliverable {
+      border-top: 0.5px solid rgba(0,0,0,0.08);
+      padding-top: 12px;
+    }
+
+    .deliverable .col-label {
+      margin-bottom: 5px;
+    }
+
+    .deliverable p {
+      font-size: 13px;
+      color: #3d3d3a;
+      line-height: 1.6;
+    }
+
+    footer {
+      margin-top: 32px;
+      font-size: 12px;
+      color: #b4b2a9;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Local LLM Code Review API — Build Plan</h1>
+    <p>5-week plan · Node.js · Ollama · PostgreSQL · Jest · AWS</p>
+  </header>
+
+  <!-- Week 1 -->
+  <div class="week-card">
+    <div class="week-header">
+      <span class="week-badge badge-blue">Week 1</span>
+      <span class="week-title">Foundation — Node.js + Express API</span>
+    </div>
+    <div class="week-body">
+      <div class="week-grid">
+        <div>
+          <p class="col-label">Daily goals</p>
+          <p class="day-item">Day 1–2: Install Node.js, init project with npm, build your first "hello world" Express server</p>
+          <p class="day-item">Day 3–4: Build POST /review route, accept JSON body, return a mock response</p>
+          <p class="day-item">Day 5–7: Add API key auth middleware, input validation with Zod or Joi</p>
+        </div>
+        <div>
+          <p class="col-label">Resume checkbox</p>
+          <p class="check-item"><span class="check-mark">✓</span> Node.js REST API</p>
+          <p class="check-item"><span class="check-mark">✓</span> Back-end services development</p>
+          <p class="check-item"><span class="check-mark">✓</span> Secure software development practices</p>
+        </div>
+      </div>
+      <div class="deliverable">
+        <p class="col-label">Deliverable by end of week</p>
+        <p>A running Express server that accepts a code diff and returns a JSON response. Pushed to GitHub with a README.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 2 -->
+  <div class="week-card">
+    <div class="week-header">
+      <span class="week-badge badge-green">Week 2</span>
+      <span class="week-title">AI Integration — Ollama + LLM prompt engineering</span>
+    </div>
+    <div class="week-body">
+      <div class="week-grid">
+        <div>
+          <p class="col-label">Daily goals</p>
+          <p class="day-item">Day 1–2: Install Ollama, pull Mistral or LLaMA 3, run it locally via CLI</p>
+          <p class="day-item">Day 3–4: Call Ollama's HTTP API from Node.js, pipe the code diff as context</p>
+          <p class="day-item">Day 5–7: Engineer a structured prompt — get the model to return JSON with issues, severity, and suggestions</p>
+        </div>
+        <div>
+          <p class="col-label">Resume checkbox</p>
+          <p class="check-item"><span class="check-mark">✓</span> AI/LLM integration (self-hosted)</p>
+          <p class="check-item"><span class="check-mark">✓</span> Emerging technology research + recommendation</p>
+          <p class="check-item"><span class="check-mark">✓</span> Translating requirements into code</p>
+        </div>
+      </div>
+      <div class="deliverable">
+        <p class="col-label">Deliverable by end of week</p>
+        <p>POST /review sends a real diff to Ollama and returns structured AI feedback. End-to-end working locally.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 3 -->
+  <div class="week-card">
+    <div class="week-header">
+      <span class="week-badge badge-amber">Week 3</span>
+      <span class="week-title">Database — PostgreSQL + SQL</span>
+    </div>
+    <div class="week-body">
+      <div class="week-grid">
+        <div>
+          <p class="col-label">Daily goals</p>
+          <p class="day-item">Day 1–2: Install PostgreSQL, design schema — reviews, users, audit_log tables</p>
+          <p class="day-item">Day 3–4: Connect Node.js to DB using pg or Prisma ORM, write DB helper functions</p>
+          <p class="day-item">Day 5–7: Add GET /reviews history endpoint, paginated query, add rate limiter</p>
+        </div>
+        <div>
+          <p class="col-label">Resume checkbox</p>
+          <p class="check-item"><span class="check-mark">✓</span> Database design (PostgreSQL)</p>
+          <p class="check-item"><span class="check-mark">✓</span> SQL queries + schema design</p>
+          <p class="check-item"><span class="check-mark">✓</span> Back-end services with persistent storage</p>
+        </div>
+      </div>
+      <div class="deliverable">
+        <p class="col-label">Deliverable by end of week</p>
+        <p>Every review is stored in PostgreSQL. You can fetch review history by user. Schema is versioned with migrations.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 4 -->
+  <div class="week-card">
+    <div class="week-header">
+      <span class="week-badge badge-red">Week 4</span>
+      <span class="week-title">Testing — Jest unit + integration tests</span>
+    </div>
+    <div class="week-body">
+      <div class="week-grid">
+        <div>
+          <p class="col-label">Daily goals</p>
+          <p class="day-item">Day 1–2: Install Jest + Supertest, write unit tests for all validators and controllers</p>
+          <p class="day-item">Day 3–4: Write integration tests for every route — happy path + edge cases (bad input, no auth, empty diff)</p>
+          <p class="day-item">Day 5–7: Write a test plan document, hit >80% code coverage, add coverage badge to README</p>
+        </div>
+        <div>
+          <p class="col-label">Resume checkbox</p>
+          <p class="check-item"><span class="check-mark">✓</span> Testing frameworks (Jest)</p>
+          <p class="check-item"><span class="check-mark">✓</span> Complex test plans — designed and executed</p>
+          <p class="check-item"><span class="check-mark">✓</span> Debugging and troubleshooting</p>
+        </div>
+      </div>
+      <div class="deliverable">
+        <p class="col-label">Deliverable by end of week</p>
+        <p>Full Jest test suite. A written test plan document. Coverage report showing >80%. All green on CI.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 5 -->
+  <div class="week-card">
+    <div class="week-header">
+      <span class="week-badge badge-gray">Week 5</span>
+      <span class="week-title">Cloud deployment — Docker + AWS EC2 + RDS</span>
+    </div>
+    <div class="week-body">
+      <div class="week-grid">
+        <div>
+          <p class="col-label">Daily goals</p>
+          <p class="day-item">Day 1–2: Write a Dockerfile for the API, docker-compose for API + Ollama + Postgres locally</p>
+          <p class="day-item">Day 3–4: Provision AWS EC2 (free tier), push image, configure environment variables and security groups</p>
+          <p class="day-item">Day 5–7: Migrate DB to AWS RDS, set up IAM roles, write deployment docs, finalize README</p>
+        </div>
+        <div>
+          <p class="col-label">Resume checkbox</p>
+          <p class="check-item"><span class="check-mark">✓</span> Cloud deployment (AWS EC2 + RDS)</p>
+          <p class="check-item"><span class="check-mark">✓</span> Docker containerization</p>
+          <p class="check-item"><span class="check-mark">✓</span> Deployment planning + feedback mechanisms</p>
+        </div>
+      </div>
+      <div class="deliverable">
+        <p class="col-label">Deliverable by end of week</p>
+        <p>A live URL on AWS. Anyone can POST a code diff and get an AI review back. Fully documented on GitHub.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>Local LLM Code Review API · 5-week build plan</footer>
+</div>
+</body>
+</html>
