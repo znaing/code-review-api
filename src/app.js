@@ -1,4 +1,7 @@
 const express = require('express');
+const authMiddleware = require('./middleware/auth')
+const validateReview = require('./middleware/validate')
+
 const app = express();
 
 // Middleware: parse incoming JSON request bodies
@@ -17,15 +20,15 @@ app.get('/health', (req, res) => {
 // req = the incoming request, res = the response you send back
 
 
-app.post('/api/v1/review', (req, res) => {
+app.post('/api/v1/review', authMiddleware, validateReview, (req, res) => {
     const { diff, language, filename } = req.body;
 
     // For now, just echo back what we received
     // Week 2 is where Ollama replaces this mock
     res.json({
         reviewId: 'mock001',
-        filename: filename || 'unknown',
-        language: language || 'unknown',
+        filename,
+        language,
         recievedDiff: diff,
         issues: [],
         summary: 'Mock response -Ollama integration coming in week 2'
