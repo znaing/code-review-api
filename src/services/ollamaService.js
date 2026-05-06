@@ -1,5 +1,8 @@
 const ollama = require('ollama').default;
 
+//Read model name from environment - never hardcode it 
+const MODEL = process.env.OLLAMA_MODEL || 'gemma4:e4b';
+
 const VALID_SEVERITIES = ['high', 'medium', 'low'];
 
 //Normalize whatever the model returns into our accepted values
@@ -33,6 +36,7 @@ const reviewCode = async ({ diff, language, filename }) => {
             issues: [],
             summary: 'No changes detected in diff.',
             approved: true,
+            durationMs: 0
         };
     }
     // ... rest of the function
@@ -59,12 +63,16 @@ const reviewCode = async ({ diff, language, filename }) => {
     Code diff to review:
     ${diff}`;
 
+    //Start the timer right before calling ollama
+    const startTime = Date.now();
+
     // Replace the ollama.generate() call with this
     const parsed = await withRetry(async () => {
         const response = await ollama.generate({
-            model: 'gemma4:e4b',
+            model: MODEL,
             prompt,
             stream: false,
+            keep_alive: process.env.OLLAMA_KEEP_ALIVE || '5m',
             options: {
                 temperature: 0.2,
                 num_predict: 1024,
@@ -84,6 +92,8 @@ const reviewCode = async ({ diff, language, filename }) => {
         return result;
     });
 
+    //Calculate how long ollama took 
+    const durationMs = Date.now() - startTime
     //normalize severity values so they always match our enum
 
     parsed.issues = parsed.issues.map(issue => ({
@@ -94,7 +104,12 @@ const reviewCode = async ({ diff, language, filename }) => {
     //Recalculate approved based on normalized severities 
     parsed.approved = !parsed.issues.some(i => i.severity === 'high');
 
+    //Attach timing and model info to the result
+    parsed.durationMs = durationMs
+    parsed.model = MODEL;
+
     return parsed;
 };
 
 module.exports = { reviewCode };
+

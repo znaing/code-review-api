@@ -16,8 +16,11 @@ router.post('/', authMiddleware, validateReview, async (req, res, next) => {
             reviewId: `review-${Date.now()}`,
             filename,
             language,
-            ...review,
-            model: 'gemma4:e4b',
+            issues: review.issues,
+            summary: review.summary,
+            approved: review.approved,
+            model: review.model,
+            durationMs: review.durationMs,
             createdAt: new Date().toISOString(),
         });
 
