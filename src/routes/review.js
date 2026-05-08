@@ -20,6 +20,7 @@ router.post('/', authMiddleware, validateReview, async (req, res, next) => {
             summary: review.summary,
             approved: review.approved,
             model: review.model,
+            promptVersion: review.promptVersion,
             durationMs: review.durationMs,
             createdAt: new Date().toISOString(),
         });

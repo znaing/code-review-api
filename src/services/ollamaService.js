@@ -1,9 +1,9 @@
 const ollama = require('ollama').default;
+const { buildReviewPrompt } = require('../prompts/reviewPrompt');
 
 //Read model name from environment - never hardcode it 
 const MODEL = process.env.OLLAMA_MODEL || 'gemma4:e4b';
 
-const VALID_SEVERITIES = ['high', 'medium', 'low'];
 
 //Normalize whatever the model returns into our accepted values
 
@@ -36,32 +36,13 @@ const reviewCode = async ({ diff, language, filename }) => {
             issues: [],
             summary: 'No changes detected in diff.',
             approved: true,
-            durationMs: 0
+            durationMs: 0,
+            promptVersion: null,
+            model: MODEL,
         };
     }
     // ... rest of the function
-    const prompt = `You are an expert code reviewver. Ananlyze the following ${language} code diff from the file "${filename}" and return a structured review.
-
-    You must respond with valid JSON only. No explanations, no markdowns, no code blocks, Just raw JSON.
-
-    Severity levels must be exactly one of: "high", "medium", or "low".
-
-    The JSON must follow this exact structure:
-
-    {
-        "issues": [
-            {
-                "severity":  "high" | "medium" | "low",
-                "line": <line number as integer or null if unknown>,
-                "message": "<what the issue is>",
-                "suggestion": "<how to fix it>"
-            }
-        ]
-        "summary": "<one sentence overall assessment>",
-        "approved": <true if no high severity issues, false otherwise>        
-    }
-    Code diff to review:
-    ${diff}`;
+    const { prompt, promptVersion } = buildReviewPrompt({ diff, language, filename });
 
     //Start the timer right before calling ollama
     const startTime = Date.now();
@@ -107,6 +88,7 @@ const reviewCode = async ({ diff, language, filename }) => {
     //Attach timing and model info to the result
     parsed.durationMs = durationMs
     parsed.model = MODEL;
+    parsed.promptVersion = promptVersion;
 
     return parsed;
 };
