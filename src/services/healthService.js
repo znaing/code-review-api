@@ -1,5 +1,6 @@
 //src/services/healthService.js
 const ollama = require('ollama').default;
+const pool = require('../db/pool');
 
 const checkOllama = async () => {
     try {
@@ -18,4 +19,13 @@ const checkOllama = async () => {
     }
 };
 
-module.exports = { checkOllama };
+const checkDatabase = async () => {
+    try {
+        await pool.query('SELECT 1');
+        return { status: 'ok' };
+    } catch (err) {
+        return { status: 'unreachable', error: err.message };
+    }
+};
+
+module.exports = { checkOllama, checkDatabase };

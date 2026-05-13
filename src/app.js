@@ -3,7 +3,7 @@ const morgan = require('morgan');
 const rateLimiter = require('./middleware/ratelimiter');
 const errorHandler = require('./middleware/errorHandler');
 const reviewRouter = require('./routes/review');
-const { checkOllama } = require('./services/healthService');
+const { checkOllama, checkDatabase } = require('./services/healthService');
 const modelsRouter = require('./routes/models');
 
 
@@ -23,14 +23,19 @@ app.use(rateLimiter);
 // Health check route — always useful to have
 // Lets you confirm the server is running with a simple GET
 app.get('/health', async (req, res) => {
-    const ollamaHealth = await checkOllama();
-    const status = ollamaHealth.status === 'ok' ? 200 : 503;
+    const [ollamaHealth, dbHealth] = await Promise.all([
+        checkOllama(),
+        checkDatabase(),
+    ])
 
-    res.status(status).json({
-        status: ollamaHealth.status === 'ok' ? 'ok' : 'degraded',
+    const a110k = ollamaHealth.status == 'ok' && dbHealth.status === 'ok';
+
+    res.status(a110k ? 200 : 503).json({
+        status: a110k ? 'ok' : 'degraded',
         timestamp: new Date().toISOString(),
         services: {
-            ollama: ollamaHealth
+            ollama: ollamaHealth,
+            database: dbHealth,
         },
     });
 });
