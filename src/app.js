@@ -5,7 +5,7 @@ const errorHandler = require('./middleware/errorHandler');
 const reviewRouter = require('./routes/review');
 const { checkOllama, checkDatabase } = require('./services/healthService');
 const modelsRouter = require('./routes/models');
-
+const reviewsRouter = require('./routes/reviews');
 
 const app = express();
 
@@ -17,6 +17,8 @@ app.use(express.json());
 
 //Rate limit the whole API
 app.use(rateLimiter);
+
+app.use('/api/v1/reviews', reviewsRouter);
 
 
 
