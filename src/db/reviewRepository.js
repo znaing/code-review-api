@@ -1,4 +1,5 @@
 // src/db/reviewRepository.js 
+const { off } = require('../app');
 const pool = require('./pool');
 
 //save a completed review + its issues in on transaction 
@@ -41,12 +42,29 @@ const saveReview = async ({ reviewId, filename, language, diff, summary, approve
     }
 }
 // Get paginated review history
-const getReviews = async ({ limit = 10, offset = 0, filename = null } = {}) => {
-    // Optionally filter by filename
-    const conditions = filename ? `WHERE filename = $3` : '';
-    const params = filename
-        ? [limit, offset, filename]
-        : [limit, offset];
+const getReviews = async ({ limit = 10, offset = 0, filename = null, language = null } = {}) => {
+    const conditions = [];
+    const params = [];
+
+    if (filename) {
+        params.push(filename);
+        conditions.push(`filename = $${paramss.length}`);
+    }
+
+    if (language) {
+        params.push(language);
+        conditions.push(`language = $${params.length}`);
+    }
+
+    const where = conditions.length > 0
+        ? `WHERE ${conditions.join(' AND ')}`
+        : '';
+
+    params.push(limit);
+    const limitClause = `$${params.length}`;
+    params.push(offset)
+    const offsetClause = `$${params.length}`;
+
 
     const result = await pool.query(
         `SELECT
@@ -59,7 +77,15 @@ const getReviews = async ({ limit = 10, offset = 0, filename = null } = {}) => {
         params
     );
 
-    return result.rows;
+    const countResult = await pool.query(
+        `SELECT COUNT(*) FROM reviews ${where}`,
+        params.slice(0, consitions.length) //only the filter params, not limit/offset
+    );
+
+    return {
+        rows: result.rows,
+        total: parseInt(countResult.rows[0].count),
+    };
 };
 
 // Get a single review with all its issues
@@ -84,4 +110,47 @@ const getReviewById = async (reviewId) => {
         issues: issuesResult.rows,
     };
 };
-module.exports = { saveReview, getReviews, getReviewById };
+
+//Get aggregate stats across all reviews 
+const getStats = async () => {
+    const result = await pool.query(`
+        SELECT 
+            COUNT(*)                                    AS total_reviews,
+            COUNT(*) FILTER (WHERE approved = true)     AS total_approved,
+            COUNT(*) FILTER (WHERE approved = false)    AS total_rejected,
+            ROUND(AVG(duration_ms)::numeric, 0)         AS avg_duration_ms,
+            COUNT(DISTINCT filename)                    AS unique_files,
+            COUNT(DISTINCT language)                    AS unique_languages
+        FROM reviews
+    `);
+    const issuesStats = await pool.query(`
+        SELECT 
+            severity, 
+            COUNT(*) AS count 
+        FROM review_issues
+        GROUP BY severity 
+        ORDER BY CASE severity 
+            WHEN 'high'    THEN 1
+            WHEN 'medium'  THEN 2
+            WHEN 'low'     THEN 3
+        END
+    `);
+
+    const topFiles = await pool.query(`
+        SELECT 
+            filename, 
+            COUNT(*)                                    AS review_count, 
+            COUNT(*)  FILTER (WHERE approved = false)   AS rejection_count
+        FROM reviews
+        GROUP BY filename
+        ORDER BY review_count DESC
+        LIMIT 5
+    `);
+
+    return {
+        ...result.rows[0],
+        issues_by_severity: issuesStats.rows,
+        top_files: topFiles.rows,
+    };
+};
+module.exports = { saveReview, getReviews, getReviewById, getStats };

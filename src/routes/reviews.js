@@ -2,7 +2,17 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/auth');
-const { getReviews, getReviewById } = require('../db/reviewRepository');
+const { getReviews, getReviewById, getStats } = require('../db/reviewRepository');
+
+//GET /api/v1/reviews/stats - must be before /:reviewId or gets swallowed
+router.get('/stats', authMiddleware, async (req, res, next) => {
+    try {
+        const stats = await getStats();
+        res.json(stats);
+    } catch (err) {
+        next(err);
+    }
+});
 
 // GET /api/v1/reviews — paginated history
 router.get('/', authMiddleware, async (req, res, next) => {
@@ -10,15 +20,18 @@ router.get('/', authMiddleware, async (req, res, next) => {
         const limit = Math.min(parseInt(req.query.limit) || 10, 50); // max 50
         const offset = parseInt(req.query.offset) || 0;
         const filename = req.query.filename || null;
+        const language = req.query.language || null;
 
-        const reviews = await getReviews({ limit, offset, filename });
+        const { rows, total } = await getReviews({ limit, offset, filename, language });
 
         res.json({
             reviews,
             pagination: {
                 limit,
                 offset,
-                count: reviews.length,
+                count: rows.length,
+                total,
+                hasMore: offset + rows.length < total,
             },
         });
     } catch (err) {
